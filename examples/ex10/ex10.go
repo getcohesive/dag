@@ -1,15 +1,21 @@
 package main
 
-import "github.com/getcohesive/dag"
+import (
+	"github.com/getcohesive/dag"
+	"github.com/getcohesive/dag/task"
+)
 
 func main() {
+	d1 := dag.New()
+	d1.Pipeline(f1, f3)
+
+	d2 := dag.New()
+	d2.Pipeline(f2, f4)
 
 	d := dag.New()
-	d.Spawns(f1, f2, f3).
+	d.Spawns(task.Of(d1), task.Of(d2)).
 		Join().
-		Pipeline(f4, f5).
-		Then().
-		Spawns(f6, f7, f8)
+		Pipeline(f5)
 	d.Run()
 }
 
@@ -27,13 +33,4 @@ func f4() {
 }
 func f5() {
 	println("f5")
-}
-func f6() {
-	println("f6")
-}
-func f7() {
-	println("f7")
-}
-func f8() {
-	println("f8")
 }

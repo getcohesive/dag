@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mostafa-asg/dag"
+	"github.com/getcohesive/dag"
 )
 
 func main() {

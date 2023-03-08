@@ -1,7 +1,7 @@
 package main
 
-import "github.com/mostafa-asg/dag"
-import "github.com/mostafa-asg/dag/pipeline"
+import "github.com/getcohesive/dag"
+import "github.com/getcohesive/dag/pipeline"
 
 func main() {
 
