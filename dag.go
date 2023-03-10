@@ -23,32 +23,31 @@ func (dag *Dag) lastJob() *Job {
 
 // Run starts the tasks
 // It will block until all functions are done
-func (dag *Dag) Run() {
-
+func (dag *Dag) Run() error {
 	for _, job := range dag.jobs {
-		run(job)
+		err := run(job)
+		if err != nil {
+			return err
+		}
 	}
 
+	return nil
 }
 
 // RunAsync executes Run on another goroutine
-func (dag *Dag) RunAsync(onComplete func()) {
+func (dag *Dag) RunAsync(onComplete func(error)) {
 	go func() {
-
-		dag.Run()
-
+		err := dag.Run()
 		if onComplete != nil {
-			onComplete()
+			onComplete(err)
 		}
-
 	}()
 }
 
 // Pipeline executes tasks sequentially
-func (dag *Dag) Pipeline(tasks ...func()) *pipelineResult {
-
+func (dag *Dag) Pipeline(tasks ...func() error) *pipelineResult {
 	job := &Job{
-		tasks:      make([]func(), len(tasks)),
+		tasks:      make([]func() error, len(tasks)),
 		sequential: true,
 	}
 
@@ -64,10 +63,10 @@ func (dag *Dag) Pipeline(tasks ...func()) *pipelineResult {
 }
 
 // Spawns executes tasks concurrently
-func (dag *Dag) Spawns(tasks ...func()) *spawnsResult {
+func (dag *Dag) Spawns(tasks ...func() error) *spawnsResult {
 
 	job := &Job{
-		tasks:      make([]func(), len(tasks)),
+		tasks:      make([]func() error, len(tasks)),
 		sequential: false,
 	}
 

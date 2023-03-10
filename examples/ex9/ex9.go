@@ -19,8 +19,9 @@ func main() {
 	d.Run()
 }
 
-func g(n string) func() {
-	return func() {
+func g(n string) func() error {
+	return func() error {
 		println(n)
+		return nil
 	}
 }

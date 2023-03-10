@@ -1,11 +1,9 @@
 package dag
 
-func run(job *Job) {
-
+func run(job *Job) error {
 	if job.sequential {
-		runSync(job)
+		return runSync(job)
 	} else {
-		runAsync(job)
+		return runAsync(job)
 	}
-
 }
