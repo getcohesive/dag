@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"sync"
 
 	"github.com/getcohesive/dag"
@@ -12,29 +13,30 @@ func main() {
 
 	wg.Add(1)
 
+	ctx := context.Background()
 	d := dag.New()
 	d.Pipeline(f1, f2).Then().Spawns(f3, f4)
-	d.RunAsync(onComplete)
+	d.RunAsync(ctx, onComplete)
 
 	wg.Wait()
 }
 
-func f1() error {
+func f1(ctx context.Context) error {
 	println("f1")
 	return nil
 }
 
-func f2() error {
+func f2(ctx context.Context) error {
 	println("f2")
 	return nil
 }
 
-func f3() error {
+func f3(ctx context.Context) error {
 	println("f3")
 	return nil
 }
 
-func f4() error {
+func f4(ctx context.Context) error {
 	println("f4")
 	return nil
 }

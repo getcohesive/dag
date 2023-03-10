@@ -1,5 +1,7 @@
 package dag
 
+import "context"
+
 // Dag represents directed acyclic graph
 type Dag struct {
 	jobs []*Job
@@ -23,9 +25,9 @@ func (dag *Dag) lastJob() *Job {
 
 // Run starts the tasks
 // It will block until all functions are done
-func (dag *Dag) Run() error {
+func (dag *Dag) Run(ctx context.Context) error {
 	for _, job := range dag.jobs {
-		err := run(job)
+		err := run(ctx, job)
 		if err != nil {
 			return err
 		}
@@ -35,9 +37,9 @@ func (dag *Dag) Run() error {
 }
 
 // RunAsync executes Run on another goroutine
-func (dag *Dag) RunAsync(onComplete func(error)) {
+func (dag *Dag) RunAsync(ctx context.Context, onComplete func(error)) {
 	go func() {
-		err := dag.Run()
+		err := dag.Run(ctx)
 		if onComplete != nil {
 			onComplete(err)
 		}
@@ -45,9 +47,9 @@ func (dag *Dag) RunAsync(onComplete func(error)) {
 }
 
 // Pipeline executes tasks sequentially
-func (dag *Dag) Pipeline(tasks ...func() error) *PipelineResult {
+func (dag *Dag) Pipeline(tasks ...TaskFunc) *PipelineResult {
 	job := &Job{
-		tasks:      make([]func() error, len(tasks)),
+		tasks:      make([]TaskFunc, len(tasks)),
 		sequential: true,
 	}
 
@@ -63,10 +65,10 @@ func (dag *Dag) Pipeline(tasks ...func() error) *PipelineResult {
 }
 
 // Spawns executes tasks concurrently
-func (dag *Dag) Spawns(tasks ...func() error) *SpawnsResult {
+func (dag *Dag) Spawns(tasks ...TaskFunc) *SpawnsResult {
 
 	job := &Job{
-		tasks:      make([]func() error, len(tasks)),
+		tasks:      make([]TaskFunc, len(tasks)),
 		sequential: false,
 	}
 

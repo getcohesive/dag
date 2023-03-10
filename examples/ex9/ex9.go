@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/getcohesive/dag"
 	"github.com/getcohesive/dag/pipeline"
 	"github.com/getcohesive/dag/task"
@@ -16,11 +17,11 @@ func main() {
 	d := dag.New()
 	d.Spawns(task.Of(d1), task.Of(d2)).Join().Pipeline(g("f13"))
 
-	d.Run()
+	_ = d.Run(context.Background())
 }
 
-func g(n string) func() error {
-	return func() error {
+func g(n string) func(ctx context.Context) error {
+	return func(ctx context.Context) error {
 		println(n)
 		return nil
 	}

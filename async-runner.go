@@ -1,15 +1,18 @@
 package dag
 
-import "sync"
+import (
+	"context"
+	"sync"
+)
 
-func runAsync(job *Job) error {
+func runAsync(ctx context.Context, job *Job) error {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(job.tasks))
 	errs := make([]error, len(job.tasks), len(job.tasks))
 
 	for i, task := range job.tasks {
-		go func(i int, task func() error) {
-			err := task()
+		go func(i int, task TaskFunc) {
+			err := task(ctx)
 			errs[i] = err
 			wg.Done()
 		}(i, task)
@@ -24,7 +27,7 @@ func runAsync(job *Job) error {
 	}
 
 	if job.onComplete != nil {
-		return job.onComplete()
+		return job.onComplete(ctx)
 	}
 
 	return nil

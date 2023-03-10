@@ -1,24 +1,27 @@
 package main
 
-import "github.com/getcohesive/dag"
+import (
+	"context"
+	"github.com/getcohesive/dag"
+)
 
 func main() {
 	d := dag.New()
 	d.Pipeline(f1, f2, f3)
-	_ = d.Run()
+	_ = d.Run(context.Background())
 }
 
-func f1() error {
+func f1(ctx context.Context) error {
 	println("f1")
 	return nil
 }
 
-func f2() error {
+func f2(ctx context.Context) error {
 	println("f2")
 	return nil
 }
 
-func f3() error {
+func f3(ctx context.Context) error {
 	println("f3")
 	return nil
 }

@@ -10,7 +10,7 @@ func (result *PipelineResult) Then() *PipelineDSL {
 	}
 }
 
-func (result *PipelineResult) OnComplete(action func() error) *PipelineResult {
+func (result *PipelineResult) OnComplete(action TaskFunc) *PipelineResult {
 	job := result.dag.lastJob()
 	if job != nil {
 		job.onComplete = action
@@ -22,7 +22,7 @@ type PipelineDSL struct {
 	dag *Dag
 }
 
-func (dsl *PipelineDSL) Spawns(tasks ...func() error) *SpawnsResult {
+func (dsl *PipelineDSL) Spawns(tasks ...TaskFunc) *SpawnsResult {
 	dsl.dag.Spawns(tasks...)
 	return &SpawnsResult{
 		dsl.dag,
@@ -39,7 +39,7 @@ func (result *SpawnsResult) Join() *SpawnsDSL {
 	}
 }
 
-func (result *SpawnsResult) OnComplete(action func() error) *SpawnsResult {
+func (result *SpawnsResult) OnComplete(action TaskFunc) *SpawnsResult {
 	job := result.dag.lastJob()
 	if job != nil {
 		job.onComplete = action
@@ -51,7 +51,7 @@ type SpawnsDSL struct {
 	dag *Dag
 }
 
-func (dsl *SpawnsDSL) Pipeline(tasks ...func() error) *PipelineResult {
+func (dsl *SpawnsDSL) Pipeline(tasks ...TaskFunc) *PipelineResult {
 	dsl.dag.Pipeline(tasks...)
 	return &PipelineResult{
 		dsl.dag,

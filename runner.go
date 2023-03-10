@@ -1,9 +1,11 @@
 package dag
 
-func run(job *Job) error {
+import "context"
+
+func run(ctx context.Context, job *Job) error {
 	if job.sequential {
-		return runSync(job)
+		return runSync(ctx, job)
 	} else {
-		return runAsync(job)
+		return runAsync(ctx, job)
 	}
 }

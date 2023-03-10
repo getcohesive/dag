@@ -1,15 +1,17 @@
 package dag
 
-func runSync(job *Job) error {
+import "context"
+
+func runSync(ctx context.Context, job *Job) error {
 	for _, task := range job.tasks {
-		err := task()
+		err := task(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
 	if job.onComplete != nil {
-		return job.onComplete()
+		return job.onComplete(ctx)
 	}
 
 	return nil

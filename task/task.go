@@ -1,9 +1,12 @@
 package task
 
-import "github.com/getcohesive/dag"
+import (
+	"context"
+	"github.com/getcohesive/dag"
+)
 
-func Of(d *dag.Dag) func() error {
-	return func() error {
-		return d.Run()
+func Of(d *dag.Dag) dag.TaskFunc {
+	return func(ctx context.Context) error {
+		return d.Run(ctx)
 	}
 }
