@@ -45,7 +45,7 @@ func (dag *Dag) RunAsync(onComplete func(error)) {
 }
 
 // Pipeline executes tasks sequentially
-func (dag *Dag) Pipeline(tasks ...func() error) *pipelineResult {
+func (dag *Dag) Pipeline(tasks ...func() error) *PipelineResult {
 	job := &Job{
 		tasks:      make([]func() error, len(tasks)),
 		sequential: true,
@@ -57,13 +57,13 @@ func (dag *Dag) Pipeline(tasks ...func() error) *pipelineResult {
 
 	dag.jobs = append(dag.jobs, job)
 
-	return &pipelineResult{
+	return &PipelineResult{
 		dag,
 	}
 }
 
 // Spawns executes tasks concurrently
-func (dag *Dag) Spawns(tasks ...func() error) *spawnsResult {
+func (dag *Dag) Spawns(tasks ...func() error) *SpawnsResult {
 
 	job := &Job{
 		tasks:      make([]func() error, len(tasks)),
@@ -76,7 +76,7 @@ func (dag *Dag) Spawns(tasks ...func() error) *spawnsResult {
 
 	dag.jobs = append(dag.jobs, job)
 
-	return &spawnsResult{
+	return &SpawnsResult{
 		dag,
 	}
 }

@@ -1,16 +1,16 @@
 package dag
 
-type pipelineResult struct {
+type PipelineResult struct {
 	dag *Dag
 }
 
-func (result *pipelineResult) Then() *pipelineDSL {
-	return &pipelineDSL{
+func (result *PipelineResult) Then() *PipelineDSL {
+	return &PipelineDSL{
 		result.dag,
 	}
 }
 
-func (result *pipelineResult) OnComplete(action func() error) *pipelineResult {
+func (result *PipelineResult) OnComplete(action func() error) *PipelineResult {
 	job := result.dag.lastJob()
 	if job != nil {
 		job.onComplete = action
@@ -18,28 +18,28 @@ func (result *pipelineResult) OnComplete(action func() error) *pipelineResult {
 	return result
 }
 
-type pipelineDSL struct {
+type PipelineDSL struct {
 	dag *Dag
 }
 
-func (dsl *pipelineDSL) Spawns(tasks ...func() error) *spawnsResult {
+func (dsl *PipelineDSL) Spawns(tasks ...func() error) *SpawnsResult {
 	dsl.dag.Spawns(tasks...)
-	return &spawnsResult{
+	return &SpawnsResult{
 		dsl.dag,
 	}
 }
 
-type spawnsResult struct {
+type SpawnsResult struct {
 	dag *Dag
 }
 
-func (result *spawnsResult) Join() *spawnsDSL {
-	return &spawnsDSL{
+func (result *SpawnsResult) Join() *SpawnsDSL {
+	return &SpawnsDSL{
 		result.dag,
 	}
 }
 
-func (result *spawnsResult) OnComplete(action func() error) *spawnsResult {
+func (result *SpawnsResult) OnComplete(action func() error) *SpawnsResult {
 	job := result.dag.lastJob()
 	if job != nil {
 		job.onComplete = action
@@ -47,13 +47,13 @@ func (result *spawnsResult) OnComplete(action func() error) *spawnsResult {
 	return result
 }
 
-type spawnsDSL struct {
+type SpawnsDSL struct {
 	dag *Dag
 }
 
-func (dsl *spawnsDSL) Pipeline(tasks ...func() error) *pipelineResult {
+func (dsl *SpawnsDSL) Pipeline(tasks ...func() error) *PipelineResult {
 	dsl.dag.Pipeline(tasks...)
-	return &pipelineResult{
+	return &PipelineResult{
 		dsl.dag,
 	}
 }
