@@ -1,6 +1,8 @@
 package dag
 
-import "context"
+import (
+	"context"
+)
 
 // Dag represents directed acyclic graph
 type Dag struct {
@@ -36,14 +38,31 @@ func (dag *Dag) Run(ctx context.Context) error {
 	return nil
 }
 
+func (dag *Dag) Stop(ctx context.Context) error {
+	for _, job := range dag.jobs {
+		err := stop(ctx, job)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // RunAsync executes Run on another goroutine
-func (dag *Dag) RunAsync(ctx context.Context, onComplete func(error)) {
+func (dag *Dag) RunAsync(ctx context.Context, onComplete func(error)) chan struct{} {
+	exitChannel := make(chan struct{})
 	go func() {
-		err := dag.Run(ctx)
-		if onComplete != nil {
-			onComplete(err)
+		select {
+		case <-exitChannel:
+
+		default:
+			err := dag.Run(ctx)
+			if onComplete != nil {
+				onComplete(err)
+			}
 		}
 	}()
+	return exitChannel
 }
 
 // Pipeline executes tasks sequentially
@@ -82,3 +101,20 @@ func (dag *Dag) Spawns(tasks ...TaskFunc) *SpawnsResult {
 		dag,
 	}
 }
+
+//
+// func (dag *Dag) Stop(ctx context.Context) error {
+// 	var errs []error
+// 	for _, job := range dag.jobs {
+// 		if job.Stop() != nil {
+// 			err := job.Stop()
+// 			errs = append(errs, err)
+// 		}
+// 	}
+// 	accumulatedErrString := ""
+// 	for _, err := range errs {
+// 		accumulatedErrString += err.Error() + "|"
+// 	}
+//
+// 	return errors.New(accumulatedErrString)
+// }
