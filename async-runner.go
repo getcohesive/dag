@@ -2,6 +2,7 @@ package dag
 
 import (
 	"context"
+	"fmt"
 	"sync"
 )
 
@@ -30,6 +31,8 @@ func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
 			select {
 			case <-a.exitChannel[job.Id]:
 				a.wg[job.Id].Done()
+				close(a.exitChannel[job.Id])
+				delete(a.exitChannel, job.Id)
 				return
 			default:
 				err := task(ctx)
@@ -40,6 +43,7 @@ func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
 	}
 
 	a.wg[job.Id].Wait()
+	delete(a.wg, job.Id)
 
 	for _, e := range errs {
 		if e != nil {
@@ -56,9 +60,12 @@ func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
 }
 
 func (a *AsyncRunner) Stop(_ context.Context, job *Job) error {
+	for {
+		if _, ok := a.exitChannel[job.Id]; ok {
+			break
+		}
+	}
 	a.exitChannel[job.Id] <- struct{}{}
-	close(a.exitChannel[job.Id])
-	delete(a.exitChannel, job.Id)
-	delete(a.wg, job.Id)
+	fmt.Println("signal sent")
 	return nil
 }
