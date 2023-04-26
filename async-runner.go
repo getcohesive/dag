@@ -20,6 +20,7 @@ func (a *AsyncRunner) New() AsyncRunner {
 func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
 	fmt.Println("AsyncRunner.Run: starting", job.Id)
 	a.wg[job.Id] = &sync.WaitGroup{}
+	defer delete(a.wg, job.Id)
 
 	a.wg[job.Id].Add(len(job.tasks))
 
@@ -34,7 +35,6 @@ func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
 	}
 
 	a.wg[job.Id].Wait()
-	delete(a.wg, job.Id)
 
 	for _, e := range errs {
 		if e != nil {
