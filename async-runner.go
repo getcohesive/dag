@@ -2,6 +2,7 @@ package dag
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -60,12 +61,12 @@ func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
 }
 
 func (a *AsyncRunner) Stop(_ context.Context, job *Job) error {
-	for {
-		if _, ok := a.exitChannel[job.Id]; ok {
-			break
-		}
+	fmt.Println("AsyncRunner.Stop: stopping", job.Id)
+	if channel, ok := a.exitChannel[job.Id]; ok {
+		channel <- struct{}{}
+		fmt.Println("AsyncRunner.Stop: signal sent")
+		return nil
+	} else {
+		return errors.New("AsyncRunner.Stop: exitChannel for job not found")
 	}
-	a.exitChannel[job.Id] <- struct{}{}
-	fmt.Println("signal sent")
-	return nil
 }
