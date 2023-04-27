@@ -2,24 +2,25 @@ package dag
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"sync"
 )
 
 type AsyncRunner struct {
-	wg          map[string]*sync.WaitGroup
-	exitChannel map[string]chan struct{}
+	wg map[string]*sync.WaitGroup
 }
 
 func (a *AsyncRunner) New() AsyncRunner {
 	return AsyncRunner{
-		wg:          make(map[string]*sync.WaitGroup),
-		exitChannel: make(map[string]chan struct{}),
+		wg: make(map[string]*sync.WaitGroup),
 	}
 }
 
 func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
+	fmt.Println("AsyncRunner.Run: starting", job.Id)
 	a.wg[job.Id] = &sync.WaitGroup{}
-	a.exitChannel[job.Id] = make(chan struct{})
+	defer delete(a.wg, job.Id)
 
 	a.wg[job.Id].Add(len(job.tasks))
 
@@ -27,15 +28,9 @@ func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
 
 	for i, task := range job.tasks {
 		go func(i int, task TaskFunc) {
-			select {
-			case <-a.exitChannel[job.Id]:
-				a.wg[job.Id].Done()
-				return
-			default:
-				err := task(ctx)
-				errs[i] = err
-				a.wg[job.Id].Done()
-			}
+			err := task(ctx)
+			errs[i] = err
+			a.wg[job.Id].Done()
 		}(i, task)
 	}
 
@@ -46,7 +41,6 @@ func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
 			return e
 		}
 	}
-	delete(a.exitChannel, job.Id)
 	delete(a.wg, job.Id)
 	if job.onComplete != nil {
 		return job.onComplete(ctx)
@@ -56,9 +50,12 @@ func (a *AsyncRunner) Run(ctx context.Context, job *Job) error {
 }
 
 func (a *AsyncRunner) Stop(_ context.Context, job *Job) error {
-	a.exitChannel[job.Id] <- struct{}{}
-	close(a.exitChannel[job.Id])
-	delete(a.exitChannel, job.Id)
-	delete(a.wg, job.Id)
+	fmt.Println("AsyncRunner.Stop: stopping", job.Id)
+	if a.wg[job.Id] == nil {
+		return errors.New("job wg not found")
+	}
+	for _, _ = range job.tasks {
+		a.wg[job.Id].Done()
+	}
 	return nil
 }

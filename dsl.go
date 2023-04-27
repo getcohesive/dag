@@ -22,8 +22,8 @@ type PipelineDSL struct {
 	dag *Dag
 }
 
-func (dsl *PipelineDSL) Spawns(tasks ...TaskFunc) *SpawnsResult {
-	dsl.dag.Spawns(tasks...)
+func (dsl *PipelineDSL) Spawns(jobId string, tasks ...TaskFunc) *SpawnsResult {
+	dsl.dag.Spawns(jobId, tasks...)
 	return &SpawnsResult{
 		dsl.dag,
 	}
@@ -51,8 +51,8 @@ type SpawnsDSL struct {
 	dag *Dag
 }
 
-func (dsl *SpawnsDSL) Pipeline(tasks ...TaskFunc) *PipelineResult {
-	dsl.dag.Pipeline(tasks...)
+func (dsl *SpawnsDSL) Pipeline(jobId string, tasks ...TaskFunc) *PipelineResult {
+	dsl.dag.Pipeline(jobId, tasks...)
 	return &PipelineResult{
 		dsl.dag,
 	}

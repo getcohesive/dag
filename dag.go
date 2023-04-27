@@ -66,8 +66,9 @@ func (dag *Dag) RunAsync(ctx context.Context, onComplete func(error)) chan struc
 }
 
 // Pipeline executes tasks sequentially
-func (dag *Dag) Pipeline(tasks ...TaskFunc) *PipelineResult {
+func (dag *Dag) Pipeline(jobId string, tasks ...TaskFunc) *PipelineResult {
 	job := &Job{
+		Id:         jobId,
 		tasks:      make([]TaskFunc, len(tasks)),
 		sequential: true,
 	}
@@ -84,9 +85,10 @@ func (dag *Dag) Pipeline(tasks ...TaskFunc) *PipelineResult {
 }
 
 // Spawns executes tasks concurrently
-func (dag *Dag) Spawns(tasks ...TaskFunc) *SpawnsResult {
+func (dag *Dag) Spawns(jobId string, tasks ...TaskFunc) *SpawnsResult {
 
 	job := &Job{
+		Id:         jobId,
 		tasks:      make([]TaskFunc, len(tasks)),
 		sequential: false,
 	}
